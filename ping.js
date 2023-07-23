@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 
-export async function sendSlackMessage(message) {
+export default async function sendSlackMessage(message) {
     await axios.post('https://slack.com/api/chat.postMessage', { 
         channel: process.env.SLACK_CHANNEL_ID,
         text: message
