@@ -7,7 +7,9 @@ async function mainLoop() {
   while (true) {
     const transactionTags = await listenForTransactions();
 
-    await sendSlackMessage(transactionTags)
+    if (transactionTags.tags === []) {
+      await sendSlackMessage(transactionTags)
+    }
 
     await delay(20000);
   }
