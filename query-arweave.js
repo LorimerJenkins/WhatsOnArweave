@@ -1,3 +1,6 @@
+import dotEnv from 'dotenv'
+dotEnv.config()
+
 import Arweave from 'arweave';
 import Heroku from 'heroku-client';
 import queryTransactionIDsBetweenBlocks from './arweaveGQL.js';
@@ -30,7 +33,7 @@ async function queryBlock(lastFullBlock, currentBlock) {
     let uniqueTags = [];
     const txnPromises = previousBlocksTxns.map(async (txn) => {
         try {
-            const transaction = await arweave.transactions.get(txn, { decode: true });
+            const transaction = await arweave.transactions.get(txn);
             const tags = transaction.get('tags');
             tags.map((tag) => {
                 const decodedTag = {
@@ -70,12 +73,12 @@ async function queryBlock(lastFullBlock, currentBlock) {
 
 
 
-async function queryTransactions(missedTransactions) {
+async function queryTransactions(missedTransactions, lastIndexedBlock) {
 
     let uniqueTags = [];
     const txnPromises = missedTransactions.map(async (txn) => {
         try {
-            const transaction = await arweave.transactions.get(txn, { decode: true });
+            const transaction = await arweave.transactions.get(txn);
             const tags = transaction.get('tags');
             tags.map((tag) => {
                 const decodedTag = {
@@ -93,14 +96,14 @@ async function queryTransactions(missedTransactions) {
                 }
             });
         } catch (e) {
-            console.log('Error:', e)
+            // ignore gateway errors
         }
     });
 
     await Promise.all(txnPromises);
 
 
-    return { block: lastFullBlock, tags: uniqueTags }
+    return { block: lastIndexedBlock, tags: uniqueTags }
 
 }
 
@@ -136,7 +139,7 @@ export default async function listenForTransactions() {
         
         console.log(`We have MISSED blocks. currentBlock: ${shortenAddress(currentBlock)}. currentFullBlock: ${shortenAddress(currentFullBlock)}. Current time: ${currentDate.toLocaleString()}.`)
         const missedTransactions = await queryTransactionIDsBetweenBlocks(lastCurrentBlock, currentFullBlock)
-        const transactionTags = await queryTransactions(missedTransactions)
+        const transactionTags = await queryTransactions(missedTransactions, lastIndexedBlock)
 
         const saveLastFullBlock = await updateHerokuFn('lastIndexedBlock', currentFullBlock);
         if (saveLastFullBlock === false) {
