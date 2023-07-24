@@ -129,6 +129,8 @@ export default async function listenForTransactions() {
         
         console.log(`NO new block. currentBlock: ${shortenAddress(currentBlock)}. currentFullBlock: ${shortenAddress(currentFullBlock)}. Current time: ${currentDate.toLocaleString()}.`)
     
+        return false
+        
     } else if (currentFullBlock === lastCurrentBlock) {
         
         console.log(`NEW block. currentBlock: ${shortenAddress(currentBlock)}. currentFullBlock: ${shortenAddress(currentFullBlock)}. Current time: ${currentDate.toLocaleString()}.`)
